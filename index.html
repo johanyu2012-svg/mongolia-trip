@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌞燦爛陽光旅行助手 Mongolia / Russia Ez Go🌞</title>
+<div style="padding:20px;text-align:center"><p style="font-size:14px;opacity:0.8;">
+專屬行程｜客製化服務｜蒙古/俄羅斯 深度體驗
+</p>
+</div>
+<style>
+body{
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+ background: linear-gradient(135deg,#0B1E3B,#1f3c73);
+ color:#fff;
+ margin:0;
+
+}
+
+.header{
+
+ padding:16px;
+ font-size:20px;
+ font-weight:bold;
+ background:rgba(0,0,0,0.3);
+ backdrop-filter: blur(10px);
+
+}
+
+.section{
+ max-width:480px;
+ margin:auto;
+}
+
+.card{
+ transition:0.3s;
+}
+
+.card:hover{
+ transform:translateY(-3px);
+}
+
+button{
+ box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+button:hover{
+ transform:scale(1.05);
+}
+
+input,select,textarea{
+ width:50%;
+ padding:10px;
+ margin:6px;
+ border-radius:10px;
+ border:none;
+ outline:none;
+}
+
+.footer{
+ font-size:12px;
+ opacity:0.8;
+ margin:10px;
+}
+</style>
+
+<script>
+
+let groups=JSON.parse(localStorage.getItem('groups')||'{}');
+let users=[];
+try{
+ users=JSON.parse(localStorage.getItem('users'))||[];
+}catch(e){
+ users=[];
+}
+
+if(!groups || Object.keys(groups).length===0){
+ groups={
+   "草原團":{
+     list:["護照"],
+     trip:["Day1 草原"],
+     note:"注意事項"
+   }
+
+ };
+ localStorage.setItem('groups',JSON.stringify(groups));
+}
+
+let currentGroup="",currentUser="",editingGroup="";
+
+function save(){
+ localStorage.setItem('groups',JSON.stringify(groups));
+ localStorage.setItem('users',JSON.stringify(users));
+}
+
+function show(id){
+ document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+ document.getElementById(id).style.display='block';
+
+ if(id==="login"){
+   loadGroups();
+   loadUsers();
+ }
+ if(id==="admin"){
+   loadGroups();
+ }
+}
+
+function loadGroups(){
+ let sel=document.getElementById("group");
+ let list=document.getElementById("groupList");
+
+ if(!sel) return;
+
+ sel.innerHTML='<option value="">選團</option>';
+ Object.keys(groups).forEach(g=>{
+   let opt=document.createElement("option");
+   opt.value=g;
+   opt.textContent=g;
+   sel.appendChild(opt);
+ });
+
+ if(!list) return;
+
+ list.innerHTML="";
+ Object.keys(groups).forEach(g=>{
+   let div=document.createElement("div");
+
+   let edit=document.createElement("button");
+   edit.innerText="編輯";
+   edit.onclick=()=>editGroup(g);
+
+   let del=document.createElement("button");
+   del.innerText="刪除";
+   del.onclick=()=>{
+     delete groups[g];
+     save();
+     loadGroups();
+   };
+
+   div.innerText=g+" ";
+   div.appendChild(edit);
+   div.appendChild(del);
+
+   list.appendChild(div);
+ });
+}
+
+function loadUsers(){
+ let sel=document.getElementById("userHistory");
+ if(!sel) return;   // ⭐ 關鍵防爆
+
+ sel.innerHTML='<option value="">歷史紀錄</option>';
+
+ users.forEach(u=>{
+   let opt=document.createElement("option");
+   opt.value=u;
+   opt.textContent=u;
+   sel.appendChild(opt);
+ });
+
+ sel.onchange=function(){
+   document.getElementById("nameInput").value=this.value;
+ };
+}
+
+function login(){
+ let name=document.getElementById("nameInput").value;
+ let g=document.getElementById("group").value;
+
+ if(!name||!g){alert("請填寫");return;}
+
+ currentUser=name;
+ currentGroup=g;
+
+ if(!users.includes(name)) users.push(name);
+
+ save();
+
+ document.getElementById("userInfo").innerText="👤 "+name+"（"+g+"）";
+
+ render();
+ show("home");
+}
+
+function render(){
+ let g=groups[currentGroup];
+ if(!g) return;
+
+ document.getElementById("trip").innerHTML=(g.trip||[]).join("<br>");
+ document.getElementById("list").innerHTML=(g.list||[]).join("<br>");
+ document.getElementById("note").innerText=g.note||"";
+}
+
+function editGroup(g){
+ editingGroup=g;
+ document.getElementById("editList").value=groups[g].list.join(",");
+ document.getElementById("editTrip").value=groups[g].trip.join(",");
+ document.getElementById("editNote").value=groups[g].note;
+ document.getElementById("editArea").style.display="block";
+}
+
+function saveEdit(){
+ groups[editingGroup].list=document.getElementById("editList").value.split(",");
+ groups[editingGroup].trip=document.getElementById("editTrip").value.split(",");
+ groups[editingGroup].note=document.getElementById("editNote").value;
+
+ save();
+ loadGroups();
+ document.getElementById("editArea").style.display="none";
+}
+
+function generate(){
+ let g=groups[currentGroup];
+
+
+ let notes=[];
+if(season.value==="春") notes.push("請攜帶個人盥洗用品,太陽眼鏡,厚外套,手套,保暖衣與保濕用品");
+if(season.value==="夏") notes.push("請攜帶個人盥洗用品,太陽眼鏡,薄外套與防曬乳");
+if(season.value==="秋") notes.push("請攜帶個人盥洗用品,太陽眼鏡,手套與保暖衣");
+if(season.value==="冬") notes.push("請攜帶個人盥洗用品,太陽眼鏡,厚外套,手套,保暖衣與保濕用品");
+ if(type.value==="攝影") notes.push("請攜帶相機,鏡頭與備用電池");
+ if(type.value==="怕冷") notes.push("建議準備暖暖包,在當地購買毛襪");
+ if(food.value!=="不忌口") notes.push("飲食需求："+food.value);
+
+ g.note=notes.join(" & ");
+ save();
+ render();
+
+}
+window.addEventListener("DOMContentLoaded", function(){
+ show("login");
+});
+
+function exportPDF(){
+ let g=groups[currentGroup];
+
+ let html=`
+ <div style="font-family:Arial;padding:25px;color:#000">
+<div style="padding:20px;text-align:center"><p style="font-size:14px;opacity:0.8;">
+專屬行程｜客製化服務｜蒙古/俄羅斯 深度體驗
+</p>
+</div>
+
+ <h3 style="text-align:center;"><img src="logo1.png" style="width:60px;margin-bottom:0px;"> 燦爛陽光旅行</h3>
+ <p style="text-align:center;">Mongolia / Russia Ez Go</p>
+
+ <hr>
+
+ <h2>👤 ${currentUser}</h2>
+ <p>團別：${currentGroup}</p>
+
+ <hr>
+
+ <h3>📅 行程安排</h3>
+ <div>${(g.trip||[]).join("<br>")}</div>
+
+ <h3>🧳 行李清單</h3>
+ <div>${(g.list||[]).join("<br>")}</div>
+
+ <h3>⚠️ 注意事項</h3>
+ <div>${g.note||""}</div>
+
+ <hr>
+
+ <p style="text-align:center;margin-top:20px;">
+ 📞 WhatsApp: +976-95232642 ｜🌐 mongoliaonline.net｜📧 johanyu2012@gmail.com
+
+ </p>
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://mongoliaonline.net">
+ <p style="text-align:right;font-size:12px;">
+ Powered by “Гялалзах Нар" XXK
+ </p><p style="text-align:right;font-size:12px;">燦爛陽光自由行 @2026 copyright</p>
+ </div>
+ `;
+
+ let w=window.open("");
+ w.document.write(html);
+ w.print();
+}
+
+function shareTrip(){
+ let g=groups[currentGroup];
+
+ let data={
+   name:currentUser,
+   group:currentGroup,
+   trip:g.trip,
+   list:g.list,
+   note:g.note
+ };
+
+ let encoded=btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+ let url=location.origin + location.pathname + "?data=" + encoded;
+
+ navigator.clipboard.writeText(url);
+
+ alert("🔗 專屬行程連結已複製，直接貼給客人即可！");
+}
+
+function loadShared(){
+ let params=new URLSearchParams(window.location.search);
+ let d=params.get("data");
+ if(!d) return;
+
+ let data=JSON.parse(decodeURIComponent(escape(atob(d))));
+
+ currentUser=data.name;
+ currentGroup=data.group;
+
+ groups[currentGroup]={
+   trip:data.trip,
+   list:data.list,
+   note:data.note
+ };
+
+ render();
+ show("home");
+}
+
+window.addEventListener("DOMContentLoaded", function(){
+ loadShared();
+ show("login");
+});
+</script>
+
+</head>
+
+<body>
+
+<div class="header">
+  <img src="logo.png" style="width:60px;margin-bottom:6px;">
+  <b>燦爛陽光旅行助手 / Mongolia / Russia Ez Go</b><br>
+  
+
+</div>
+
+
+<div id="login" class="section" style="display:block;">
+<input id="nameInput" placeholder="姓名"><br>
+<select id="userHistory"></select><br>
+<select id="group"></select><br>
+<button onclick="login()">進入</button>
+<button onclick="show('admin')">後台</button>
+</div>
+
+<div id="home" class="section">
+<div id="userInfo"></div>
+
+<div class="card"><h3>📅 行程</h3><div id="trip"></div></div>
+<div class="card"><h3>🧳 清單</h3><div id="list"></div></div>
+<div class="card"><h3>⚠️ 注意事項</h3><div id="note"></div></div>
+
+<button onclick="show('gen')">🧳 清單生成器</button>
+<button onclick="exportPDF()">📄PDF</button>
+<button onclick="shareTrip()">📲分享</button>
+<button onclick="show('login')">返回</button>
+</div>
+
+<div id="gen" class="section">
+<select id="season"><option>春</option><option>夏</option><option>秋</option><option>冬</option></select><br>
+<select id="type"><option>一般</option><option>攝影</option><option>怕冷</option></select><br>
+<select id="food">
+<option>不忌口</option>
+<option>奶蛋素</option>
+<option>全素</option>
+<option>不吃牛</option>
+<option>不吃羊</option>
+<option>可吃雞</option>
+</select><br>
+
+<button onclick="generate()">生成</button>
+
+<button onclick="show('home')">返回</button>
+</div>
+
+<div id="admin" class="section">
+<input id="newGroup" placeholder="新增團">
+<button onclick="groups[newGroup.value]={list:['護照'],trip:['Day1'],note:'提醒'};save();loadGroups()">新增</button>
+
+<div id="groupList"></div>
+
+<div id="editArea" style="display:none;">
+<textarea id="editList"></textarea><br>
+<textarea id="editTrip"></textarea><br>
+<textarea id="editNote"></textarea><br>
+<button onclick="saveEdit()">保存</button>
+</div>
+
+<button onclick="show('login')">返回</button>
+</div>
+<div class="footer">
+<div style="background:white;color:black;padding:20px;text-align:center">
+📞whatsapp +976-95232642｜🌐 mongoliaonline.net｜ 📧 johanyu2012@gmail.com
+ </div>
+
+<div style="color:white;padding:20px;text-align:right">
+<p>Powered by “Гялалзах Нар" XXK</p> <p>燦爛陽光自由行 @2026 copyright</p>
+</div>
+</body>
+</html>
