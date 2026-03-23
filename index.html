@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🌞燦爛陽光旅行助手 Mongolia / Russia Ez Go🌞</title>
+<title>燦爛陽光旅行助手</title>
 
 <style>
 body{
@@ -14,10 +14,9 @@ body{
 }
 
 .header{
- padding:16px;
  text-align:center;
+ padding:15px;
  background:rgba(0,0,0,0.3);
- backdrop-filter: blur(10px);
 }
 
 .section{
@@ -29,14 +28,13 @@ body{
 
 .card{
  background:rgba(255,255,255,0.08);
- border-radius:12px;
  padding:10px;
+ border-radius:12px;
  margin:10px;
 }
 
 .card h3{
  color:#FFD700;
- margin-bottom:5px;
 }
 
 button{
@@ -54,13 +52,6 @@ input,select{
  margin:5px;
  border-radius:8px;
  border:none;
-}
-
-.footer{
- font-size:12px;
- text-align:center;
- margin:10px;
- opacity:0.8;
 }
 </style>
 
@@ -96,14 +87,75 @@ function show(id){
  }
 }
 
+function editGroup(g){
+ document.getElementById("editArea").style.display="block";
+ editingGroup=g;
+
+ document.getElementById("editList").value=groups[g].list.join(",");
+ document.getElementById("editTrip").value=groups[g].trip.join(",");
+ document.getElementById("editNote").value=groups[g].note;
+}
+
+function saveEdit(){
+ groups[editingGroup].list=document.getElementById("editList").value.split(",");
+ groups[editingGroup].trip=document.getElementById("editTrip").value.split(",");
+ groups[editingGroup].note=document.getElementById("editNote").value;
+
+ save();
+ loadGroups();
+
+ document.getElementById("editArea").style.display="none";
+}
+
 function loadGroups(){
  let sel=document.getElementById("group");
+ let list=document.getElementById("groupList");
+
+ if(!sel) return;
+
+ // 下拉選單
  sel.innerHTML='<option value="">選團</option>';
  Object.keys(groups).forEach(g=>{
    let opt=document.createElement("option");
    opt.value=g;
    opt.textContent=g;
    sel.appendChild(opt);
+ });
+
+ if(!list) return;
+
+ // ⭐ 後台清單
+ list.innerHTML="";
+
+ Object.keys(groups).forEach(g=>{
+   let div=document.createElement("div");
+   div.style.margin="5px";
+
+   let name=document.createElement("span");
+   name.innerText=g + " ";
+   name.style.marginRight="10px";
+
+   // 編輯
+   let edit=document.createElement("button");
+   edit.innerText="編輯";
+   edit.onclick=()=>editGroup(g);
+
+   // 刪除
+   let del=document.createElement("button");
+   del.innerText="刪除";
+   del.onclick=()=>{
+     if(confirm("確定刪除 "+g+" ?")){
+       delete groups[g];
+       save();
+       loadGroups();
+     }
+   };
+
+   div.appendChild(name);
+   div.appendChild(edit);
+   div.appendChild(del);
+
+   list.appendChild(div);
  });
 }
 
@@ -226,16 +278,32 @@ function loadShared(){
 
  groups[currentGroup]=data;
 
- render();
- show("home");
+ // ⭐ 先顯示 home（不要用 show）
+ document.getElementById("login").style.display="none";
+ document.getElementById("home").style.display="block";
 
+ render();
+
+ // ⭐ 隱藏後台
  document.getElementById("adminBtn").style.display="none";
+
+ // ⭐ 改標題
+ document.title=currentUser+" 專屬行程";
+
+ // ⭐ 延遲改網址（非常關鍵）
+ setTimeout(()=>{
+   history.replaceState(null,"","/"+currentUser);
+ },300);
 }
 
 window.addEventListener("DOMContentLoaded", function(){
- loadShared();
- show("login");
-});
+ let params=new URLSearchParams(window.location.search);
+
+ if(params.get("d")){
+   loadShared();   // ⭐ 客人模式
+ }else{
+   show("login");  // ⭐ 管理端
+ }});
 </script>
 </head>
 
@@ -243,7 +311,7 @@ window.addEventListener("DOMContentLoaded", function(){
 
 <div class="header">
 <img src="logo.png" style="width:60px;max-width:60px;">
-<div>燦爛陽光旅行助手</div>
+<div>燦爛陽光旅行</div>
 <div style="font-size:12px;">Mongolia / Russia Ez Go</div>
 </div>
 
@@ -252,14 +320,30 @@ window.addEventListener("DOMContentLoaded", function(){
 <select id="userHistory"></select><br>
 <select id="group"></select><br>
 <button onclick="login()">進入</button>
+<button onclick="show('admin')">後台</button>  <!-- ⭐補這行 -->
 </div>
 
+<div id="admin" class="section">
+<input id="newGroup" placeholder="新增團">
+<button onclick="groups[newGroup.value]={list:['護照'],trip:['Day1'],note:'提醒'};save();loadGroups()">新增</button>
+
+<div id="groupList"></div>
+
+<div id="editArea" style="display:none;">
+<textarea id="editList"></textarea><br>
+<textarea id="editTrip"></textarea><br>
+<textarea id="editNote"></textarea><br>
+<button onclick="saveEdit()">保存</button>
+</div>
+
+<button onclick="show('login')">返回</button>
+</div>
 <div id="home" class="section">
 <div id="userInfo"></div>
 
-<div class="card"><h3>行程</h3><div id="trip"></div></div>
-<div class="card"><h3>清單</h3><div id="list"></div></div>
-<div class="card"><h3>注意事項</h3><div id="note"></div></div>
+<div class="card"><h3>📅 行程</h3><div id="trip"></div></div>
+<div class="card"><h3>🧳 清單</h3><div id="list"></div></div>
+<div class="card"><h3>⚠️ 注意事項</h3><div id="note"></div></div>
 
 <div id="adminBtn">
 <button onclick="show('gen')">生成器</button>
@@ -281,10 +365,6 @@ window.addEventListener("DOMContentLoaded", function(){
 </select>
 <button onclick="generate()">生成</button>
 <button onclick="show('home')">返回</button>
-</div>
-
-<div class="footer">
-📞 WhatsApp: +976-95232642 ｜ mongoliaonline.net
 </div>
 
 </body>
