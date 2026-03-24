@@ -262,6 +262,34 @@ function exportPDF(){
  w.print();
 }
 
+async function loadShared(){
+ let params=new URLSearchParams(window.location.search);
+ let user=params.get("user");
+ if(!user) return;
+
+ let doc=await db.collection("clients").doc(user).get();
+
+ if(!doc.exists){
+   alert("找不到客戶資料");
+   return;
+ }
+
+ let data=doc.data();
+
+ currentUser=data.name;
+ currentGroup=data.group;
+
+ groups[currentGroup]=data;
+
+ document.getElementById("login").style.display="none";
+ document.getElementById("home").style.display="block";
+ document.getElementById("adminBtn").style.display="none";
+
+ render();
+
+ document.title=currentUser+" 專屬行程";
+}
+
 async function shareTrip(){
  let g=groups[currentGroup];
 
