@@ -291,25 +291,6 @@ async function loadShared(){
 }
 
 async function shareTrip(){
- let g=groups[currentGroup];
-
- let data={
-   name:currentUser,
-   group:currentGroup,
-   trip:g.trip,
-   list:g.list,
-   note:g.note
- };
-
- await db.collection("clients").doc(currentUser).set(data);
-
- let url="https://johanyu2012-svg.github.io/mongolia-trip/?user="+currentUser;
-
- navigator.clipboard.writeText(url);
-
- alert("✅ 客人專屬行程已建立！");
-}
-
 window.addEventListener("DOMContentLoaded", function(){
  let params=new URLSearchParams(window.location.search);
 
@@ -319,7 +300,40 @@ window.addEventListener("DOMContentLoaded", function(){
    show("login");
  }
 });
-</script>
+ if(!currentUser){
+   alert("請先登入再分享！");
+   return;
+ }
+
+ if(!currentGroup){
+   alert("請先選擇團別！");
+   return;
+ }
+
+ try{
+   let g=groups[currentGroup];
+
+   let data={
+     name:currentUser,
+     group:currentGroup,
+     trip:g.trip,
+     list:g.list,
+     note:g.note
+   };
+
+   await db.collection("clients").doc(currentUser).set(data);
+
+   let url="https://johanyu2012-svg.github.io/mongolia-trip/?user="+currentUser;
+
+   navigator.clipboard.writeText(url);
+
+   alert("✅ 客人專屬行程已建立！");
+ }
+ catch(e){
+   console.error(e);
+   alert("❌ 發生錯誤："+e.message);
+ }
+}</script>
 </head>
 
 <body>
