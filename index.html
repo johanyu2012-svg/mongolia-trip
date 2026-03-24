@@ -279,7 +279,9 @@ async function loadShared(){
  currentUser=data.name;
  currentGroup=data.group;
 
- groups[currentGroup]=data;
+ groups[if(!groups[currentGroup]){
+  groups[currentGroup]=data;
+}]=data;
 
  document.getElementById("login").style.display="none";
  document.getElementById("home").style.display="block";
